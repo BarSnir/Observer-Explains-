@@ -2,24 +2,24 @@ const userObserver = require('../Observers/UserObserver').modules;
 
 class UserObservable {
     constructor() {
-        this.observerList = [];
+        this.observerList = {};
     }
 
     addObserver(observerUsername){
-        this.observerList.push(new userObserver(observerUsername));
+        this.observerList[observerUsername] = new userObserver(observerUsername);
     }
 
     removeObserver(observerUsername){
-        let index = this.observerList.indexOf(observerUsername);
-        this.observerList.splice(index, 1);
+        delete this.observerList[observerUsername];
     }
 
-    notifyObservers(username){
-        for (let i = 0; i < this.observerList.length; i++) {
-            if(this.observerList[i].username === username) {
+    notifyObservers(username, action){
+        for (let observer in this.observerList) {
+            let observerInstance = this.observerList[observer];
+            if(observerInstance.username === username) {
                 continue;
             }
-            this.observerList[i].update(username);
+            observerInstance.update(username, action);
         }
     }
 
