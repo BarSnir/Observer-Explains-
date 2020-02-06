@@ -5,12 +5,13 @@ const WebSocketClient = require('../DataSource/WebSocketClient').modules;
 
 
 class UserController {
-    constructor(){
+    constructor() {
         this.userPosition = 0;
         this.userList = Object.assign(importedUsers, []);
         this.userEvents = UserEvents;
         this.webSocketClient = WebSocketClient;
     }
+
     addUsers(req, res, next) {
         const addEventInterval = setInterval(()=>{
             if(!this.userList.length) {
@@ -55,5 +56,4 @@ class UserController {
         },2000);
     }
 }
-
 exports.UserController = new UserController();
