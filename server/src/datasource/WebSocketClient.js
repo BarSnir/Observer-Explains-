@@ -1,6 +1,6 @@
 const ioInstance = require('socket.io');
 
-class WebSocketUtil {
+class WebSocketClient {
     constructor() {
         this.wsServer = null;
     }
@@ -12,4 +12,4 @@ class WebSocketUtil {
     }
 }
 
-exports.modules = new WebSocketUtil();
+exports.modules = new WebSocketClient();

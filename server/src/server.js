@@ -1,14 +1,14 @@
 
 
-const WebSocketUtil = require('./Utils/WebSocketUtil').modules;
+const WebSocketClient = require('./DataSource/WebSocketClient').modules;
 const Router = require('./Routes/router').modules;
-const port = 4000;
 const cors = require('cors');
+const port = 4000;
 
 exports.modules = {
     app: null,
     router: null,
-    webSocketUtil: null,
+    webSocketClient: null,
     server: null,
     serverMsg: `Observer demo app listening on port ${port}!`,
     setup(app){
@@ -26,7 +26,7 @@ exports.modules = {
         this.router = Router.getRouter();
     },
     runWebSocket(server) {
-        this.webSocketUtil = WebSocketUtil.setup(server);
+        this.webSocketClient = WebSocketClient.setup(server);
         console.log('WebSocket IO is ready to use.');
         return this;
     },

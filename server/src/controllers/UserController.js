@@ -1,55 +1,58 @@
 const importedUsers = require('../userList').userList;
-const userEvents = require('../datasource/UserEvents').modules;
+const UserEvents = require('../DataSource/UserEvents').modules;
 const Observables = require('../Observables/UserObservable').modules;
+const WebSocketClient = require('../DataSource/WebSocketClient').modules;
 
 
 class UserController {
     constructor(){
-
-        let userPosition = 0;
-        let userList = [];
+        this.userPosition = 0;
+        this.userList = Object.assign(importedUsers, []);
+        this.userEvents = UserEvents;
+        this.webSocketClient = WebSocketClient;
     }
-    addUsers() {
-        if(!userList.length) {
-            userList = store;
-        }
-        
-        const addEventInterval = setInterval(addUser,2000); 
-        if(userPosition === userList.length){
-            clearInterval(addEventInterval);
-            res.end();
-            return;
-        }
-        userEvents.addUserEvent(userList[userPosition]);
-        io.emit('USER',{
-            "title": `${userList[userPosition]}  has joined the chat`,
-        });
-        for (let observer in Observables.observerList) {
-            io.emit('MESSAGE',{
-                "message":Observables.observerList[observer].userMessage,
+    addUsers(req, res, next) {
+        const addEventInterval = setInterval(()=>{
+            if(!this.userList.length) {
+                this.userList = Object.assign(importedUsers, []);
+            }
+            this.userEvents.addUserEvent(this.userList[this.userPosition]);
+            this.webSocketClient.emit('USER',{
+                "title": `${this.userList[this.userPosition]}  has joined the chat`,
             });
-        }
-        userPosition++;
+            for (let observer in Observables.observerList) {
+                this.webSocketClient.emit('MESSAGE',{
+                    "message":Observables.observerList[observer].userMessage,
+                });
+            }
+            this.userPosition++;
+            if(this.userPosition === this.userList.length){
+                clearInterval(addEventInterval);
+                res.end();
+                return;
+            }
+        },2000); 
     }
 
-    removeUsers() {
-        if(!userList.length){
-            clearInterval(removeEventInterval);
-            res.end();
-            return;
-        }
-        const removeEventInterval = setInterval(removeUser,2000);
-        userEvents.removeUserEvent(userList[userList.length-1]);
-        io.emit('USER',{
-            "title": `${userList[userList.length-1]}  has left the chat`,
-        });
-        userList.pop();
-        for (let observer in Observables.observerList) {
-            io.emit('MESSAGE',{
-                "message":Observables.observerList[observer].userMessage,
+    removeUsers(req, res, next) {
+        const removeEventInterval = setInterval(()=> {
+            this.userEvents.removeUserEvent(this.userList[this.userList.length-1]);
+            this.webSocketClient.emit('USER',{
+                "title": `${this.userList[this.userList.length-1]}  has left the chat`,
             });
-        }
-        userPosition++;
+            this.userList.pop();
+            for (let observer in Observables.observerList) {
+                this.webSocketClient.emit('MESSAGE',{
+                    "message":Observables.observerList[observer].userMessage,
+                });
+            }
+            this.userPosition++;
+            if(!this.userList.length){
+                clearInterval(removeEventInterval);
+                res.end();
+                return;
+            }
+        },2000);
     }
 }
 
