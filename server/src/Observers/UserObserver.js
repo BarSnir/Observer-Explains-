@@ -9,7 +9,7 @@ class UserObserver {
             "add":`Hi from ${this.username} to ${newUser}`,
             "remove" : `By from ${this.username} to ${newUser}`
         }
-        console.log(actionMessage[action]);
+        this.userMessage = actionMessage[action];
     }
 }
 
