@@ -1,76 +1,38 @@
-const express = require('express');
-var cors = require('cors')
-const userEvents = require('../src/datasource/UserEvents').modules;
-const Observables = require('./Observables/UserObservable').modules
-const app = express();
+
+
+const WebSocketUtil = require('./Utils/WebSocketUtil').modules;
+const Router = require('./Routes/router').modules;
 const port = 4000;
+const cors = require('cors');
 
-const store = [
-    "Chen",
-    "Liran",
-    "Hadar",
-    "Ohad",
-    "Roi",
-    "Bar",
-    "Rivka",
-    "Moria",
-]
-let userPosition = 0;
-let userList = [];
-
-
-app.use(cors())
-
-app.get('/addUsers', (req, res) =>{
-    if(!userList.length) {
-        userList = store;
+exports.modules = {
+    app: null,
+    router: null,
+    webSocketUtil: null,
+    server: null,
+    serverMsg: `Observer demo app listening on port ${port}!`,
+    setup(app){
+        this.app = app;
+        this.app.use(cors());
+        this.setupRouter();
+        this.app.use(this.router);
+        return this;
+    },
+    run() {
+        this.runWebSocket(this.runServer());
+    },
+    setupRouter() {
+        Router.setupRoutes();
+        this.router = Router.getRouter();
+    },
+    runWebSocket(server) {
+        this.webSocketUtil = WebSocketUtil.setup(server);
+        console.log('WebSocket IO is ready to use.');
+        return this;
+    },
+    runServer() {
+        return this.app.listen(port, () => {
+            console.log(this.serverMsg);
+        }); 
     }
-    
-    const addEventInterval = setInterval(addUser,2000);
-    function addUser() {
-        if(userPosition === userList.length){
-            clearInterval(addEventInterval);
-            res.end();
-            return;
-        }
-        userEvents.addUserEvent(userList[userPosition]);
-        io.emit('USER',{
-            "title": `${userList[userPosition]}  has joined the chat`,
-        });
-        for (let observer in Observables.observerList) {
-            io.emit('MESSAGE',{
-                "message":Observables.observerList[observer].userMessage,
-            });
-        }
-        userPosition++;
-    }
-});
-
-app.get('/removeUsers', (req, res) => {
-    const removeEventInterval = setInterval(removeUser,2000);
-    function removeUser() {
-        if(!userList.length){
-            clearInterval(removeEventInterval);
-            res.end();
-            return;
-        }
-        userEvents.removeUserEvent(userList[userList.length-1]);
-        io.emit('USER',{
-            "title": `${userList[userList.length-1]}  has left the chat`,
-        });
-        userList.pop();
-        for (let observer in Observables.observerList) {
-            io.emit('MESSAGE',{
-                "message":Observables.observerList[observer].userMessage,
-            });
-        }
-        userPosition++;
-    }
-});
-
-
-const server = app.listen(port, () => {
-    console.log(`Example app listening on port ${port}!`)
-});
-
-const io = require('socket.io')(server);
+}
