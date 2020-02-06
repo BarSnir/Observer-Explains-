@@ -5,7 +5,6 @@ const Observables = require('./Observables/UserObservable').modules
 const app = express();
 const port = 4000;
 
-let userPosition = 0;
 const store = [
     "Chen",
     "Liran",
@@ -16,16 +15,8 @@ const store = [
     "Rivka",
     "Moria",
 ]
-let userList = [
-    "Chen",
-    "Liran",
-    "Hadar",
-    "Ohad",
-    "Roi",
-    "Bar",
-    "Rivka",
-    "Moria",
-];
+let userPosition = 0;
+let userList = [];
 
 
 app.use(cors())
@@ -34,6 +25,7 @@ app.get('/addUsers', (req, res) =>{
     if(!userList.length) {
         userList = store;
     }
+    
     const addEventInterval = setInterval(addUser,2000);
     function addUser() {
         if(userPosition === userList.length){

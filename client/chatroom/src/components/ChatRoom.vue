@@ -18,9 +18,6 @@ import axios from 'axios';
 
 export default {
   name: 'ChatRoom',
-  props: {
-    msg: String
-  },
   data() {
     return {
       messages: [],
