@@ -1,6 +1,7 @@
 const importedUsers = require('../userList').userList;
 const UserEvents = require('../DataSource/UserEvents').modules;
 const Observables = require('../Observables/UserObservable').modules;
+const UserRepo = require('../Repositories/UserRepo').modules;
 const WebSocketClient = require('../DataSource/WebSocketClient').modules;
 
 
@@ -9,22 +10,16 @@ class UserController {
         this.userPosition = 0;
         this.userList = Object.assign(importedUsers, []);
         this.userEvents = UserEvents;
+        this.userRepo = UserRepo;
         this.webSocketClient = WebSocketClient;
     }
 
     addUsers(req, res, next) {
         const addEventInterval = setInterval(()=>{
-            if(!this.userList.length) {
-                this.userList = Object.assign(importedUsers, []);
-            }
             this.userEvents.addUserEvent(this.userList[this.userPosition]);
-            this.webSocketClient.emit('USER',{
-                "title": `${this.userList[this.userPosition]}  has joined the chat`,
-            });
+            this.userRepo.emitUser(this.userList[this.userPosition], this.userEvents.actionDisplay);
             for (let observer in Observables.observerList) {
-                this.webSocketClient.emit('MESSAGE',{
-                    "message":Observables.observerList[observer].userMessage,
-                });
+                this.userRepo.emitMessage(Observables.observerList[observer].userMessage)
             }
             this.userPosition++;
             if(this.userPosition === this.userList.length){
@@ -38,14 +33,10 @@ class UserController {
     removeUsers(req, res, next) {
         const removeEventInterval = setInterval(()=> {
             this.userEvents.removeUserEvent(this.userList[this.userList.length-1]);
-            this.webSocketClient.emit('USER',{
-                "title": `${this.userList[this.userList.length-1]}  has left the chat`,
-            });
+            this.userRepo.emitUser(this.userList[this.userList.length-1], this.userEvents.actionDisplay);
             this.userList.pop();
             for (let observer in Observables.observerList) {
-                this.webSocketClient.emit('MESSAGE',{
-                    "message":Observables.observerList[observer].userMessage,
-                });
+                this.userRepo.emitMessage(Observables.observerList[observer].userMessage)
             }
             this.userPosition++;
             if(!this.userList.length){
