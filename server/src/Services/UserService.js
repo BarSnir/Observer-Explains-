@@ -28,7 +28,6 @@ class UserService {
         for (let observer in Observables.observerList) {
             this.userRepo.emitMessage(Observables.observerList[observer].userMessage)
         }
-        this.userPosition++;
         return !this.userList.length;
     }
 
