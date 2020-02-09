@@ -22,7 +22,8 @@ export default {
     return {
       messages: [],
       users: [],
-      socket : io('ws://localhost:4000')
+      socket : io('ws://localhost:4000'),
+      addTrigger: false
     }
   },
   mounted() {
@@ -40,14 +41,22 @@ export default {
   },
   methods: {
         addUsers() {
-          axios.get('http://localhost:4000/addUsers').then(()=>{
-            this.socket.emit('SEND_MESSAGE', {});
-          })
+          const addEventInterval = setInterval( ()=>{
+           axios.get('http://localhost:4000/addUsers').then((data)=>{
+            if(data.data) {
+                clearInterval(addEventInterval);
+            }
+           });
+          },2000); 
         },
         removeUsers() {
-          axios.get('http://localhost:4000/removeUsers').then(()=>{
-            this.socket.emit('SEND_MESSAGE', {});
-          })
+          const removeEventInterval = setInterval(()=>{
+           axios.get('http://localhost:4000/removeUsers').then((data)=>{
+              if(data.data) {
+                  clearInterval(removeEventInterval);
+              }
+           });
+          },2000); 
         },
         appendMessage(data) {
           this.messages.push(data);
